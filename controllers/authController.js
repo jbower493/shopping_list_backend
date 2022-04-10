@@ -56,13 +56,13 @@ module.exports = {
                 const matches = await bcrypt.compare(password, users[0].password);
                 if (matches) {
 
-                    const newAuthId = uuidv4();
+                    const newSessionId = uuidv4();
                     const userId = users[0].id;
 
-                    db.query('INSERT INTO auth (auth_id, user_id) VALUES (?, ?)', [newAuthId, userId], (err, results) => {
+                    db.query('INSERT INTO auth (session_id, user_id) VALUES (?, ?)', [newSessionId, userId], (err, results) => {
                         if (err) next(err);
 
-                        res.json({ message: 'Log in successful.', token: newAuthId });
+                        res.json({ message: 'Log in successful.', token: newSessionId });
                     });
 
                 } else {
@@ -80,7 +80,7 @@ module.exports = {
 
         const bearerToken = req.get('Authorization')?.split(' ')[1];
 
-        db.query('DELETE FROM auth WHERE auth_id = ?', [bearerToken], (err, results) => {
+        db.query('DELETE FROM auth WHERE session_id = ?', [bearerToken], (err, results) => {
             if (err) return next(err);
 
             res.json({ message: 'Successfully logged out.' });
@@ -94,12 +94,12 @@ module.exports = {
         if (!bearerToken) return next();
 
         // Find the auth session in the auth table
-        db.query('SELECT user_id FROM auth WHERE auth_id = ?', [bearerToken], (err, results) => {
+        db.query('SELECT user_id FROM auth WHERE session_id = ?', [bearerToken], (err, results) => {
             if (err) throw err;
 
             const user_id = results[0]?.user_id;
 
-            // If theres no DB entry for the auth_id then there is no logged in user, so do nothing
+            // If theres no DB entry for the session_id then there is no logged in user, so do nothing
             if (!user_id) return next();
 
             // If there is a logged in user, fetch the rest of that user's data and add it to req.user
