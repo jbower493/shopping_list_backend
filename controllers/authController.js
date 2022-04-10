@@ -1,5 +1,6 @@
 // import dependencies
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
 
 // import db
 const db = require('../config/db/db');
@@ -27,7 +28,7 @@ module.exports = {
     },
 
     login(req, res, next) {
-        const { username, password, role } = req.body;
+        const { username, password } = req.body;
 
         const errors = [];
 
@@ -42,20 +43,28 @@ module.exports = {
             return res.status(400).json({ error: errors[0] });
         }
 
-        db.query('SELECT * FROM users WHERE username = ?', [username], async (err, results) => {
+        db.query('SELECT * FROM users WHERE username = ?', [username], async (err, users) => {
             if (err) {
                 throw err;
             }
 
-            if (results.length === 0) {
+            if (users.length === 0) {
                 return res.status(401).json({ message: 'Incorrect credentials.' });
             }
 
             try {
-                const matches = await bcrypt.compare(password, results[0].password);
+                const matches = await bcrypt.compare(password, users[0].password);
                 if (matches) {
-                    req.session.auth = { userId: results[0].id };
-                    res.json({ message: 'Log in successful.' });
+
+                    const newAuthId = uuidv4();
+                    const userId = users[0].id;
+
+                    db.query('INSERT INTO auth (auth_id, user_id) VALUES (?, ?)', [newAuthId, userId], (err, results) => {
+                        if (err) next(err);
+
+                        res.json({ message: 'Log in successful.', token: newAuthId });
+                    });
+
                 } else {
                     res.status(401).json({ message: 'Incorrect credentials.' });
                 }
@@ -67,25 +76,39 @@ module.exports = {
     },
 
     logout(req, res, next) {
-        if (!req.user) {
-            return res.json();
-        }
+        if (!req.user) return res.json();
 
-        req.session.auth = 0;
-        res.json({ message: 'Successfully logged out.' });
+        const bearerToken = req.get('Authorization')?.split(' ')[1];
+
+        db.query('DELETE FROM auth WHERE auth_id = ?', [bearerToken], (err, results) => {
+            if (err) return next(err);
+
+            res.json({ message: 'Successfully logged out.' });
+        });
     },
 
     deserializeUser(req, res, next) {
-        if (req.session.auth && req.session.auth !== 0) {
-            db.query('SELECT * FROM users WHERE id = ?', [req.session.auth.userId], (err, results) => {
-                if (err) {
-                    throw err;
-                }
+        const bearerToken = req.get('Authorization')?.split(' ')[1];
+
+        // If no bearer token, do nothing
+        if (!bearerToken) return next();
+
+        // Find the auth session in the auth table
+        db.query('SELECT user_id FROM auth WHERE auth_id = ?', [bearerToken], (err, results) => {
+            if (err) throw err;
+
+            const user_id = results[0]?.user_id;
+
+            // If theres no DB entry for the auth_id then there is no logged in user, so do nothing
+            if (!user_id) return next();
+
+            // If there is a logged in user, fetch the rest of that user's data and add it to req.user
+            db.query('SELECT * FROM users WHERE id = ?', [user_id], (err, results) => {
+                if (err) throw err;
+
                 req.user = results[0];
                 next();
             });
-        } else {
-            next();
-        }
+        });
     }
 };

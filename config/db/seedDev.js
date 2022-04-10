@@ -12,11 +12,17 @@ db.connect((err) => {
             throw err;
         }
         console.log('Users table created');
-        db.end(err => {
+        db.query(statements.createAuthTable, (err, results) => {
             if (err) {
                 throw err;
             }
-            console.log('DB connection closed')
-        })
+            console.log('Auth table created');
+            db.end(err => {
+                if (err) {
+                    throw err;
+                }
+                console.log('DB connection closed')
+            })
+        });
     });
 });

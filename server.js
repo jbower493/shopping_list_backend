@@ -1,13 +1,13 @@
 // import dependencies
 const express = require('express');
-const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
-const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 const cors = require('cors');
 
 // import routers
 const authRouter = require('./routes/auth.js');
+
+// import controllers
+const authController = require('./controllers/authController.js');
 
 // import db
 const db = require('./config/db/db');
@@ -23,21 +23,6 @@ db.connect(err => {
     }
     console.info(`${process.env.NODE_ENV} database connected`);
 });
-
-// initialize mysql session store
-const sessionStore = new MySQLStore({}, db);
-
-// initialize sessions
-app.use(session({
-    name: "session_id",
-    genid: (req) => {
-        return uuidv4();
-    },
-    secret: 'secret',
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore
-}));
 
 // allow cross origin resource sharing
 app.use(cors({
@@ -55,6 +40,8 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+app.use(authController.deserializeUser);
 
 // mount routers
 app.use('/api/auth', authRouter);
