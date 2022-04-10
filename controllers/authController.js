@@ -1,5 +1,8 @@
 // import dependencies
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const jwtSecret = process.env.JWT_SECRET;
 
 // import db
 const db = require('../config/db/db');
@@ -27,7 +30,7 @@ module.exports = {
     },
 
     login(req, res, next) {
-        const { username, password, role } = req.body;
+        const { username, password } = req.body;
 
         const errors = [];
 
@@ -54,8 +57,15 @@ module.exports = {
             try {
                 const matches = await bcrypt.compare(password, results[0].password);
                 if (matches) {
-                    req.session.auth = { userId: results[0].id };
-                    res.json({ message: 'Log in successful.' });
+
+                    const userId = results[0].id.toString();
+                    
+                    jwt.sign(userId, jwtSecret, (err, token) => {
+                        if (err) return next(err);
+
+                        res.json({ message: 'Log in successful.', token });
+                    });
+
                 } else {
                     res.status(401).json({ message: 'Incorrect credentials.' });
                 }
@@ -76,16 +86,22 @@ module.exports = {
     },
 
     deserializeUser(req, res, next) {
-        if (req.session.auth && req.session.auth !== 0) {
-            db.query('SELECT * FROM users WHERE id = ?', [req.session.auth.userId], (err, results) => {
+
+        const bearerToken = req.get('Authorization')?.split(' ')[1];
+
+        if (!bearerToken) next();
+
+        jwt.verify(bearerToken, jwtSecret, (err, payload) => {
+            if (err) return next();
+
+            // if the bearer token is valid, get the user with that id from the DB and add it to the req object
+            db.query('SELECT * FROM users WHERE id = ?', [payload], (err, results) => {
                 if (err) {
                     throw err;
                 }
                 req.user = results[0];
                 next();
             });
-        } else {
-            next();
-        }
+        });
     }
 };
