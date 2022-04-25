@@ -2,10 +2,10 @@ let db;
 
 if (process.env.NODE_ENV === 'test') {
     db = require('./dbTest');
-} else if (process.env.NODE_ENV === 'dev') {
-    db = require('./dbDev');
-} else {
+} else if (process.env.NODE_ENV === 'prod') {
     db = require('./dbProd');
+} else {
+    db = require('./dbDev');
 }
 
 // wrap the standard db.query method in a promise and add it to db object as pQuery
