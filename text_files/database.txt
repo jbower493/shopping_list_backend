@@ -1,0 +1,50 @@
+MAIN TABLES
+
+user
+
+id (PK)
+username
+password
+
+
+item
+
+id (pk)
+name
+
+
+list
+
+id (pk)
+name
+user_id (fk references user.id)
+
+
+recipe
+
+id (pk)
+name
+user_id (fk references user.id)
+
+
+BRIDGING TABLES
+
+user_item
+
+id (pk)
+user_id (fk references user.id)
+item_id (fk references item.id)
+
+
+list_item
+
+id (pk)
+list_id (fk references list.id)
+item_id (fk references item.id)
+
+
+recipe_item
+
+id (pk)
+repice_id (fk references recipe.id)
+item_id (fk references item.id)

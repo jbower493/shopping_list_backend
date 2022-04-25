@@ -25,10 +25,7 @@ db.connect(err => {
 });
 
 // allow cross origin resource sharing
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-}));
+app.use(cors(/*{ origin: 'http://localhost:19006' }*/));
 
 // parse json request bodies
 app.use(express.json());
@@ -58,4 +55,4 @@ app.use((err, req, res, next) => {
 });
 
 // run the app
-app.listen(PORT, () => console.info('App started'));
+app.listen(PORT, () => console.info(`App started on port: ${PORT}`));
