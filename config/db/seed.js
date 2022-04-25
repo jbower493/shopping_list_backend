@@ -8,7 +8,7 @@ db.connect(async (err) => {
     console.log('DB connection opened')
 
     try {
-        // Create all tables
+        // Create main tables
         await db.pQuery(statements.createUsersTable);
         console.log('Users table created if it didn\'t already exist.');
         await db.pQuery(statements.createAuthTable);
@@ -19,6 +19,14 @@ db.connect(async (err) => {
         console.log('Lists table created if it didn\'t already exist.');
         await db.pQuery(statements.createRecipesTable);
         console.log('Recipes table created if it didn\'t already exist.');
+
+        // Create bridging / relationship tables
+        await db.pQuery(statements.creatUserItemBridgingTable);
+        console.log('User / items bridging table created if it didn\'t already exist.');
+        await db.pQuery(statements.creatListItemBridgingTable);
+        console.log('Lists / items bridging table created if it didn\'t already exist.');
+        await db.pQuery(statements.creatRecipeItemBridgingTable);
+        console.log('Recipes / items bridging table created if it didn\'t already exist.');
     } catch (e) {
         throw e;
     }

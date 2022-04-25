@@ -38,10 +38,10 @@ module.exports = {
         // If there is a user with the provided username, try to log the user in
         try {
             const users = await db.pQuery('SELECT * FROM user WHERE username = ?', [username]);
-            if (users.length === 0) return res.status(401).json({ message: 'Incorrect credentials.' });
+            if (users.length === 0) return res.status(401).json({ error: 'Incorrect credentials.' });
 
             const matches = await bcrypt.compare(password, users[0].password);
-            if (!matches) return res.status(401).json({ message: 'Incorrect credentials.' });
+            if (!matches) return res.status(401).json({ error: 'Incorrect credentials.' });
 
             const newSessionId = uuidv4();
             const userId = users[0].id;

@@ -11,15 +11,15 @@ const access = require('../access_control');
 const authRouter = express.Router();
 
 
-// POST /auth/create-admin
+// POST /api/auth/create-admin
 // ACCESS: no users or admin exist
 authRouter.post('/register', access.notLoggedIn, authController.register);
 
-// GET /auth/get-user
+// GET /api/auth/get-user
 // ACCESS: PUBLIC
 authRouter.get('/get-user', authController.getUser);
 
-// POST /auth/login
+// POST /api/auth/login
 // ACCESS: not logged in USER
 authRouter.post('/login', access.notLoggedIn, authController.login);
 

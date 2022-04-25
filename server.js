@@ -5,8 +5,9 @@ const cors = require('cors');
 
 // import routers
 const authRouter = require('./routes/auth.js');
+const listRouter = require('./routes/list.js');
 
-// import controllers
+// import auth controller
 const authController = require('./controllers/authController.js');
 
 // import db
@@ -42,6 +43,7 @@ app.use(authController.deserializeUser);
 
 // mount routers
 app.use('/api/auth', authRouter);
+app.use('/api/list', listRouter);
 
 // 404 response
 app.use((req, res, next) => {
