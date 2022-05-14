@@ -4,11 +4,11 @@ module.exports = {
 
     createAuthTable: 'CREATE TABLE IF NOT EXISTS auth (id INT NOT NULL AUTO_INCREMENT, session_id TEXT NOT NULL, user_id INT NOT NULL, PRIMARY KEY (id))',
 
-    createItemsTable: 'CREATE TABLE IF NOT EXISTS item (id INT NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, PRIMARY KEY (id))',
+    createItemsTable: 'CREATE TABLE IF NOT EXISTS item (id INT NOT NULL AUTO_INCREMENT, name TEXT NOT NULL UNIQUE, PRIMARY KEY (id))',
 
-    createListsTable: 'CREATE TABLE IF NOT EXISTS list (id INT NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, user_id INT NOT NULL, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES user(id))',
+    createListsTable: 'CREATE TABLE IF NOT EXISTS list (id INT NOT NULL AUTO_INCREMENT, name TEXT NOT NULL UNIQUE, user_id INT NOT NULL, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES user(id))',
 
-    createRecipesTable: 'CREATE TABLE IF NOT EXISTS recipe (id INT NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, user_id INT NOT NULL, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES user(id))',
+    createRecipesTable: 'CREATE TABLE IF NOT EXISTS recipe (id INT NOT NULL AUTO_INCREMENT, name TEXT NOT NULL UNIQUE, user_id INT NOT NULL, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES user(id))',
 
     creatUserItemBridgingTable: 'CREATE TABLE IF NOT EXISTS user_item (id INT NOT NULL AUTO_INCREMENT, user_id INT NOT NULL, item_id INT NOT NULL, PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES user(id), FOREIGN KEY (item_id) REFERENCES item(id), CONSTRAINT uq_user_item_combo UNIQUE(user_id, item_id))',
 
